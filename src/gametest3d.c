@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
     }; //we love you vertices!
     
     init_logger("gametest3d.log");
+	slog("Program begin");
     if (graphics3d_init(1024,768,1,"gametest3d",33) != 0)
     {
         return -1;
@@ -56,7 +57,7 @@ int main(int argc, char *argv[])
     
     while (bGameLoopRunning)
     {
-        if ( SDL_PollEvent(&e) ) 
+        while ( SDL_PollEvent(&e) ) 
         {
             if (e.type == SDL_QUIT)
                 bGameLoopRunning = 0;
@@ -69,16 +70,20 @@ int main(int argc, char *argv[])
 
         /* drawing code in here! */
         glUseProgram(graphics3d_get_shader_program());
+
         glBindBuffer(GL_ARRAY_BUFFER, triangleBufferObject); //bind the buffer we're applying attributes to
         glEnableVertexAttribArray(0); //0 is our index, refer to "location = 0" in the vertex shader
         glEnableVertexAttribArray(1); //attribute 1 is for vertex color data
+
         glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0); //tell gl (shader!) how to interpret our vertex data
-        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)48); //color data is 48 bytes in to the array
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 0, (void*)(12 * sizeof(float))); //color data is 48 bytes in to the array
+        
+		glDrawArrays(GL_TRIANGLES, 0, 3);
         
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
-        glUseProgram(0);
+        
+		glUseProgram(0);
         /* drawing code above here! */
         graphics3d_next_frame();
     } 
