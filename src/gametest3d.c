@@ -21,13 +21,18 @@
 #include "simple_logger.h"
 #include "graphics3d.h"
 #include "shader.h"
+#include "json.h"
+#include "sprite.h"
 
 int main(int argc, char *argv[])
 {
+	Uint8 *keys;
     GLuint vao;
     GLuint triangleBufferObject;
     char bGameLoopRunning = 1;
     SDL_Event e;
+	Mesh *model;
+	Sprite *sprite;
     const float triangleVertices[] = {
         0.0f, 0.5f, 0.0f, 1.0f,
         0.5f, -0.366f, 0.0f, 1.0f,
@@ -38,38 +43,37 @@ int main(int argc, char *argv[])
         0.0f, 0.0f, 1.0f, 1.0f  
     }; //we love you vertices!
     
-    init_logger("gametest3d.log");
+    init_logger("gametest3d2017.log");
+	sprite_init(1000);
 	slog("Program begin");
     if (graphics3d_init(1024,768,1,"gametest3d",33) != 0)
     {
         return -1;
     }
-        
-    glGenVertexArrays(1, &vao);
+
+	model = mesh_load_from_obj("models/monkey.obj");
+	mesh_reorder_arrays(model);
+	mesh_gpu_load(model);
+	sprite = sprite_load("models/monster/monster.jpg");
+
+/*    glGenVertexArrays(1, &vao);
     glBindVertexArray(vao); //make our vertex array object, we need it to restore state we set after binding it. Re-binding reloads the state associated with it.
     
     glGenBuffers(1, &triangleBufferObject); //create the buffer
     glBindBuffer(GL_ARRAY_BUFFER, triangleBufferObject); //we're "using" this one now
     glBufferData(GL_ARRAY_BUFFER, sizeof(triangleVertices), triangleVertices, GL_STATIC_DRAW); //formatting the data for the buffer
-    glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind any buffers
+    glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind any buffers*/
     
     slog("glError: %d", glGetError());
     
     while (bGameLoopRunning)
     {
-        while ( SDL_PollEvent(&e) ) 
-        {
-            if (e.type == SDL_QUIT)
-                bGameLoopRunning = 0;
-            else if (e.type == SDL_KEYUP && e.key.keysym.sym == SDLK_ESCAPE)
-                bGameLoopRunning = 0;
-        }
 
         glClearColor(0.0,0.0,0.0,0.0);
         glClear(GL_COLOR_BUFFER_BIT);
 
         /* drawing code in here! */
-        glUseProgram(graphics3d_get_shader_program());
+/*        glUseProgram(graphics3d_get_shader_program());
 
         glBindBuffer(GL_ARRAY_BUFFER, triangleBufferObject); //bind the buffer we're applying attributes to
         glEnableVertexAttribArray(0); //0 is our index, refer to "location = 0" in the vertex shader
@@ -83,9 +87,19 @@ int main(int argc, char *argv[])
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
         
-		glUseProgram(0);
+		glUseProgram(0);*/
+
+		mesh_draw(model,sprite);
         /* drawing code above here! */
         graphics3d_next_frame();
+
+		SDL_PumpEvents();
+		keys = SDL_GetKeyboardState(NULL);
+		if (keys[SDL_SCANCODE_ESCAPE])
+		{
+		  bGameLoopRunning = 0;
+		}
+
     } 
     return 0;
 }

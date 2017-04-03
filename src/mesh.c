@@ -2,6 +2,8 @@
 #include <stdio.h>
 
 #include "mesh.h"
+#include "graphics3d.h"
+#include "sprite.h"
 #include "simple_logger.h"
 
 Mesh * mesh_load_from_obj(char * filename)
@@ -65,9 +67,13 @@ Mesh * mesh_load_from_obj(char * filename)
 		return NULL;
 	}
 	mesh->tris = (Triangle *)malloc(sizeof(Triangle)*numfaces);
+	mesh->triCount = numfaces;
 	mesh->normals = (Vector3D *)malloc(sizeof(Vector3D)*numnormals);
+	mesh->normCount = numnormals;
 	mesh->texels = (Vector2D *)malloc(sizeof(Vector2D)*numtexels);
+	mesh->texCount = numtexels;
 	mesh->vertices = (Vector3D *)malloc(sizeof(Vector3D)*numvertices);
+	mesh->vertCount = numvertices;
 
 	rewind(file);
 	v = t = n = f = 0;
@@ -109,6 +115,7 @@ Mesh * mesh_load_from_obj(char * filename)
 	}
 
 	fclose(file);
+	return mesh;
 }
 
 void mesh_free(Mesh **mesh)
@@ -142,6 +149,108 @@ void mesh_free(Mesh **mesh)
 		free(m->vertices);
 	}
 	*mesh = NULL;
+}
+
+void mesh_reorder_arrays(Mesh *mesh)
+{
+	int t,c,i,tex;
+	float *vArray,*nArray,*tArray;
+
+	if (!mesh)return; // fuck off with that shit
+
+	vArray = (float *)malloc(sizeof(float)*mesh->triCount * 9);
+	nArray = (float *)malloc(sizeof(float)*mesh->triCount * 9);
+	tArray = (float *)malloc(sizeof(float)*mesh->triCount * 6);
+	for (t = 0,i=0,tex=0; t< mesh->triCount;t++)
+	{
+		for (c = 0; c < 3;c++,i+=3,tex+=2)
+		{
+			vArray[i] = mesh->vertices[mesh->tris[t].c[c].v].x;
+			vArray[i+1] = mesh->vertices[mesh->tris[t].c[c].v].y;
+			vArray[i+2] = mesh->vertices[mesh->tris[t].c[c].v].z;
+			nArray[i] = mesh->normals[mesh->tris[t].c[c].vn].x;
+			nArray[i+1] = mesh->normals[mesh->tris[t].c[c].vn].y;
+			nArray[i+2] = mesh->normals[mesh->tris[t].c[c].vn].z;
+			tArray[tex] = mesh->texels[mesh->tris[t].c[c].v].x;
+			tArray[tex+1] = mesh->texels[mesh->tris[t].c[c].v].y;
+		}
+	}
+	free(mesh->vertices);
+	free(mesh->normals);
+	free(mesh->tris);
+	free(mesh->texels);
+	mesh->vertCount = mesh->triCount * 9;
+	mesh->normCount = mesh->triCount * 9;
+	mesh->texCount = mesh->triCount * 6;
+	mesh->texels = (Vector2D*)tArray;
+	mesh->normals = (Vector3D*)nArray;
+	mesh->vertices = (Vector3D*)vArray;
+	mesh->tris = NULL;
+}
+
+void mesh_draw(Mesh * mesh,Sprite *sprite)
+{
+	if (!mesh)return;
+	glBindVertexArray(mesh->arrayBuffer);
+	    glUseProgram(graphics3d_get_shader_program());
+
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->vertBuffer); //bind the buffer we're applying attributes to
+        glEnableVertexAttribArray(0); //0 is our index, refer to "location = 0" in the vertex shader
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0); //tell gl (shader!) how to interpret our vertex data
+
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->normalBuffer); //bind the buffer we're applying attributes to
+        glEnableVertexAttribArray(1); //0 is our index, refer to "location = 0" in the vertex shader
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_TRUE, 0, 0); //tell gl (shader!) how to interpret our vertex data
+
+		glBindBuffer(GL_ARRAY_BUFFER, mesh->texelBuffer); //bind the buffer we're applying attributes to
+        glEnableVertexAttribArray(2); //0 is our index, refer to "location = 0" in the vertex shader
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, 0); //tell gl (shader!) how to interpret our vertex data
+
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+        
+        glDisableVertexAttribArray(0);
+        glDisableVertexAttribArray(1);
+        glDisableVertexAttribArray(2);
+        glDisableVertexAttribArray(3);
+        
+		glUseProgram(0);
+
+	glBindVertexArray(0);
+}
+
+void mesh_gpu_load(Mesh * mesh)
+{
+	GLuint vao;
+    GLuint vertexBufferObject,normalBufferObject,texelBufferObject;
+
+	if (!mesh)return;
+	glGenVertexArrays(1, &vao);
+    glBindVertexArray(vao); //make our vertex array object, we need it to restore state we set after binding it. Re-binding reloads the state associated with it.
+	mesh->arrayBuffer = vao;
+
+	//vertex buffer
+    glGenBuffers(1, &vertexBufferObject); //create the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject); //we're "using" this one now
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*mesh->vertCount, mesh->vertices, GL_STATIC_DRAW); //formatting the data for the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind any buffers
+
+	//normal buffer
+    glGenBuffers(1, &normalBufferObject); //create the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, normalBufferObject); //we're "using" this one now
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*mesh->normCount, mesh->normals, GL_STATIC_DRAW); //formatting the data for the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind any buffers
+
+	//texels buffer
+    glGenBuffers(1, &texelBufferObject); //create the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, texelBufferObject); //we're "using" this one now
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float)*mesh->texCount, mesh->texels, GL_STATIC_DRAW); //formatting the data for the buffer
+    glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind any buffers
+
+	glBindVertexArray(0);
+	
+	mesh->vertBuffer = vertexBufferObject;
+	mesh->texelBuffer = texelBufferObject;
+	mesh->normalBuffer = normalBufferObject;
 }
 
 

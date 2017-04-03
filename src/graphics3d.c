@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include "graphics3d.h"
 #include "simple_logger.h"
 #include "shader.h"
@@ -12,6 +13,11 @@ void graphics3d_close();
 GLuint graphics3d_get_shader_program()
 {
     return __graphics3d_shader_program;
+}
+
+SDL_Renderer * graphics_get_renderer()
+{
+	return SDL_GetRenderer(__graphics3d_window);
 }
 
 void graphics3d_next_frame()
@@ -80,6 +86,14 @@ int graphics3d_init(int sw,int sh,int fullscreen,const char *project,Uint32 fram
         return -1;
     }
     
+	if (!glewIsSupported("GL_VERSION_3_0"))
+	{
+		slog("FUUUUCK");
+	}
+	else
+	{
+		slog("OK, No Bad Fuck");
+	}
     
     __graphics3d_shader_program = BuildShaderProgram("shaders/vs1.glsl", "shaders/fs1.glsl");
     if (__graphics3d_shader_program == -1)

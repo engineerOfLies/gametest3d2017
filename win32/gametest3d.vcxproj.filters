@@ -30,6 +30,12 @@
     <ClCompile Include="..\src\mesh.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\json.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\sprite.c">
+      <Filter>Header Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\graphics3d.h">
@@ -50,5 +56,19 @@
     <ClInclude Include="..\src\mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\json.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\sprite.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\shaders\fs1.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\shaders\vs1.glsl">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
