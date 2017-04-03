@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-	model = mesh_load_from_obj("models/monkey.obj");
+	model = mesh_load_from_json("models/monster/monster.js");
 	mesh_reorder_arrays(model);
 	mesh_gpu_load(model);
 	sprite = sprite_load("models/monster/monster.jpg");

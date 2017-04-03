@@ -42,7 +42,7 @@ float *model_json_get_vertices(json_t *model,int *c)
 		vertices[i] =  json_real_value(number);
 		json_decref(number);
 	}
-//	json_decref(vertarray);
+	json_decref(vertarray);
 	*c = count;
 	return vertices;
 }
@@ -84,7 +84,7 @@ float *model_json_get_texels(json_t *model,int *c)
 		vertices[i] =  json_real_value(number);
 		json_decref(number);
 	}
-//	json_decref(vertarray);
+	json_decref(vertarray);
 	*c = count;
 	return vertices;
 }
@@ -126,7 +126,7 @@ float *model_json_get_normals(json_t *model,int *c)
 		vertices[i] =  json_real_value(number);
 		json_decref(number);
 	}
-//	if (vertarray->refcount)json_decref(vertarray);
+	if (vertarray->refcount)json_decref(vertarray);
 	*c = count;
 	return vertices;
 }
@@ -168,7 +168,7 @@ int *model_json_get_faces(json_t *model,int *c)
 		vertices[i] =  json_integer_value(number);
 		json_decref(number);
 	}
-//	json_decref(vertarray);
+	json_decref(vertarray);
 	*c = count;
 	return vertices;
 }
@@ -198,7 +198,6 @@ Mesh * mesh_load_from_json(char * filename)
 	mesh->vertices = (Vector3D*)model_json_get_vertices(json,&mesh->vertCount);
 	mesh->normals = (Vector3D*)model_json_get_normals(json,&mesh->normCount);
 	mesh->tris = (Triangle*)model_json_get_faces(json,&mesh->triCount);
-//	if (json->refcount)json_decref(json);
 	return mesh;
 }
 

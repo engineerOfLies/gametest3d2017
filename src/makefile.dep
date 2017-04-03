@@ -1,15 +1,14 @@
 gametest3d.o: gametest3d.c ../include/simple_logger.h \
- ../include/graphics3d.h ../include/shader.h json.h mesh.h \
- ../include/vector.h ../include/sprite.h ../include/graphics3d.h \
- ../include/vector.h
+ ../include/graphics3d.h ../include/shader.h ../include/json.h \
+ ../include/mesh.h ../include/vector.h ../include/graphics3d.h \
+ ../include/sprite.h ../include/sprite.h
 graphics3d.o: graphics3d.c ../include/graphics3d.h \
  ../include/simple_logger.h ../include/shader.h
-json.o: json.c mesh.h ../include/vector.h ../include/graphics3d.h \
- ../include/sprite.h ../include/graphics3d.h ../include/vector.h \
- ../include/simple_logger.h
-mesh.o: mesh.c mesh.h ../include/vector.h ../include/graphics3d.h \
- ../include/sprite.h ../include/graphics3d.h ../include/vector.h \
- ../include/simple_logger.h
+json.o: json.c ../include/mesh.h ../include/vector.h \
+ ../include/graphics3d.h ../include/sprite.h ../include/simple_logger.h
+mesh.o: mesh.c ../include/mesh.h ../include/vector.h \
+ ../include/graphics3d.h ../include/sprite.h ../include/graphics3d.h \
+ ../include/sprite.h ../include/simple_logger.h
 shader.o: shader.c ../include/shader.h ../include/simple_logger.h
 simple_logger.o: simple_logger.c ../include/simple_logger.h
 sprite.o: sprite.c ../include/sprite.h ../include/graphics3d.h \
